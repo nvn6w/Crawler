@@ -21,9 +21,9 @@ class Request(object):
     @staticmethod
     def get_page_content(url, params={}, headers={}):        
         headers2 = {
-            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept':'    text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             #'Origin': 'http://www.indiapost.gov.in',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 (KHTML, like Gecko)  Chrome/24.0.1312.57 Safari/537.17',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:28.0) Gecko/20100101 Firefox/28.0',
             #'Content-Type': 'application/x-www-form-urlencoded',
             #'Referer': 'http://www.indiapost.gov.in/pin/',
             #'Accept-Encoding': 'gzip,deflate,sdch',
