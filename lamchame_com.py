@@ -65,12 +65,15 @@ class lamchame_com(object):
     def getTheadDetail(self, url):
         headers = { 
                'Host' : 'www.lamchame.com',
-               'Accept-Language' : 'en-US,en;q=0.5',
-               'User-Agent' : '    Mozilla/5.0 (Windows NT 6.1; rv:28.0) Gecko/20100101 Firefox/28.0' ,
+#               'Accept-Language' : 'en-US,en;q=0.5',
+               #'Accept-Encoding' : 'gzip,deflate,sdch',
+               'Accept-Language' : 'vi-VN,vi;q=0.8,fr-FR;q=0.6,fr;q=0.4,en-US;q=0.2,en;q=0.2',
+               'User-Agent' : 'Mozilla/5.0 (Windows NT 6.1; rv:28.0) Gecko/20100101 Firefox/28.0' ,
                'Accept' : 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 
                'Referer': '',
               }
         html = Request.get_page_content(url, {}, headers)
+        print html
         soup = BeautifulSoup(html)
         #print soup
         postContainer = soup.find('ol', {'id' : 'posts'})
@@ -85,8 +88,12 @@ if __name__ == '__main__':
     obj = lamchame_com()
     
     url = 'http://www.lamchame.com/forum/showthread.php/1299426-Khoe-các-mẹ-ảnh-2-nhóc-nhà-mình'
-    
-    obj.getTheadDetail(url)
+    import urllib
+
+    html = urllib.urlopen(url).read()
+    print html
+
+    #obj.getTheadDetail(url)
     exit(0)
     # Test get all topic
     topics = obj.getAllTopics()
