@@ -40,7 +40,7 @@ class Request(object):
         ck_opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
         #ck_opener = urllib2.build_opener()
         response = ck_opener.open(request)
-        print response.info()
+        # print response.info()
         html = response.read()
         return html
     
