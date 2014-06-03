@@ -8,6 +8,7 @@ import traceback
 import urllib2
 import cookielib
 import urllib
+import requests
 
 class Request(object):
     '''
@@ -21,7 +22,7 @@ class Request(object):
         '''
     @staticmethod
     def get_page_content(url, params={}, headers={}):        
-        headers2 = {
+        defaultHeaders = {
             'Accept':'    text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
             #'Origin': 'http://www.indiapost.gov.in',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; rv:28.0) Gecko/20100101 Firefox/28.0',
@@ -33,8 +34,14 @@ class Request(object):
         }
         
         if (len(headers) == 0) :
-            headers = headers2
+            headers = defaultHeaders
         
+        client = requests.Session()
+        r = client.get(url, headers = headers)
+        #print r.status_code
+        html = r.text
+        
+        '''
         params = urllib.urlencode(params)
         request = urllib2.Request(url, params, headers)
         cookies = cookielib.CookieJar()
@@ -43,6 +50,7 @@ class Request(object):
         response = ck_opener.open(request)
         # print response.info()
         html = response.read()
+        '''
         return html
     
     

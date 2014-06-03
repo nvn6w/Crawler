@@ -88,12 +88,12 @@ class otofun_net(object):
                 res.append(page)
         return res 
     
-    def getThreadsInTopic(self, topicUrl, page = 1):
+    def getThreadsInTopic(self, topicUrl):
         '''
         Get all threads in a topic
         '''
 
-        res = {}
+        res = []
         html = Request.get_page_content(topicUrl)
         soup = BeautifulSoup(html)
         
@@ -109,34 +109,9 @@ class otofun_net(object):
                     if pos:
                         tUrl = tUrl[0:pos]
                     tUrl = 'http://www.otofun.net/forums/' + tUrl
-                    if tUrl not in self.listUrl:
-                        self.listUrl.append(tUrl)
-                        print 'Thread ',tUrl
-                        print tLink.string
-                        print '==========================='
-
-        #find sub-topic
-        topics = soup.find('ol', {'class' : 'subforumlist'})
-        if topics:
-            for topic in topics.findAll('li', {'class' : 'subforum'}):
-                tLink = topic.find('a')
-                if (tLink) :
-                    tUrl  = tLink['href']
-                    if tUrl not in self.listUrl:
-                        self.listUrl.append(tUrl)
-                        if 'http://' not in tUrl:
-                            tUrl = self.baseUrl + tUrl
-                        print 'Topic Level- ', page, tUrl
-                        print tLink.string
-                        self.getThreadsInTopic(tUrl)
-                print '-----------'
-        page = page + 1
-        if '?' in topicUrl:
-            topicUrl = topicUrl + '&page=' + str(page)
-        else:
-            topicUrl = topicUrl + '?page=' + str(page)
-        self.getThreadsInTopic(tUrl, page)
-        return res
+                    if tUrl not in res:
+                        res.append(tUrl)
+        return res               
     
     def getThreadDetail(self, url):
         res = {}
@@ -163,7 +138,7 @@ class otofun_net(object):
                 #postContent = re.sub('<br/>+', '_NEW_LINE_', postContent)
                 postContent = re.sub('[\t]+', ' ', postContent)
                 postContent = re.sub('[ ]+', ' ', postContent)
-                postContent = re.sub('[\r\n]+', '\r\n', postContent)
+                postContent = re.sub('[\\r\\n]+', '\n', postContent)
                 postContent = postContent.strip()            
                 
                 # date infomation

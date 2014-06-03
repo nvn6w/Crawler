@@ -12,6 +12,7 @@ from utils.Request import Request
 import urllib
 import re
 from sites.ISite import ISite
+import requests
 
 class lamchame_com(ISite):
     '''
@@ -43,8 +44,8 @@ class lamchame_com(ISite):
         '''
         
         res = []
-        #html = Request.get_page_content(topicUrl)
-        html = urllib.urlopen(topicUrl)
+        #html = urllib.urlopen(topicUrl).read()
+        html = Request.get_page_content(topicUrl)
         soup = BeautifulSoup(html)
         
         threads = soup.find('ol', {'id' : 'threads'})        
@@ -56,12 +57,11 @@ class lamchame_com(ISite):
                     if tUrl:
                         pos = tUrl.find('?s=') # loai bo chuoi ?s= .....
                         if pos != -1:
-                            tUrl = tUrl[0:pos]
-                        
+                            tUrl = tUrl[0:pos]                        
                         # them base URL    
                         tUrl = 'http://www.lamchame.com/forum/' + tUrl
                         
-                        res.append(tUrl)
+                        res.append(tUrl.encode('utf-8'))
                         #print tUrl 
                         #print '-----------'
         return res
@@ -71,7 +71,8 @@ class lamchame_com(ISite):
             Lay tong so page trong 1 topic
         '''        
         total = 0
-        html = urllib.urlopen(topicUrl)
+        #html = urllib.urlopen(topicUrl).read()
+        html = Request.get_page_content(topicUrl)
         soup = BeautifulSoup(html)
         nav = soup.find('div', {'class' : 'threadpagenav'})
         if nav:
@@ -117,9 +118,10 @@ class lamchame_com(ISite):
     
     def getThreadDetail(self, url):
         res = {}
-        
         try :
-            html = urllib.urlopen(url)
+            #html = urllib.urlopen(url).read()
+            html= Request.get_page_content(url)
+            
             soup = BeautifulSoup(html)
             #print soup
             postContainer = soup.find('ol', {'id' : 'posts'})
@@ -140,7 +142,7 @@ class lamchame_com(ISite):
                 #postContent = re.sub('<br/>+', '_NEW_LINE_', postContent)
                 postContent = re.sub('[\t]+', ' ', postContent)
                 postContent = re.sub('[ ]+', ' ', postContent)
-                postContent = re.sub('[\r\n]+', '\r\n', postContent)
+                postContent = re.sub('[\\r\\n]+', '\n', postContent)
                 postContent = postContent.strip()            
                 
                 # date infomation
@@ -221,12 +223,17 @@ if __name__ == '__main__':
     
     # test get thread detail
     url = 'http://www.lamchame.com/forum/showthread.php/1352606-Gi%C3%BAp-em-c%C3%A0i-%C4%91%E1%BA%B7t-ahamai'
+    url= 'http://www.lamchame.com/forum/showthread.php/1324384-Những-rủi-ro-có-thể-khiến-bạn-bị-khóa-nick-oan'
+    url= 'http://www.lamchame.com/forum/showthread.php/1341839-Mod-có-bị-khoá-nick-hay-không'
+    url = 'http://www.lamchame.com/forum/showthread.php/1324384-Những-rủi-ro-có-thể-khiến-bạn-bị-khóa-nick-oan'
     res = obj.getThreadDetail(url)
     
+    print res['post']
     comments = res['comments']
     for c in comments:
         print c['content']
         print '-----------------'
+    print 'Done'
     
     
         

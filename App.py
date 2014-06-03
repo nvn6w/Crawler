@@ -7,69 +7,72 @@ from time import sleep
 
 import Queue
 import threading
+from utils.RedisQueue import RedisQueue
+import json
+import redis
 
 # time_out --> can co cach reload tu dong
 CONFIG = [
-    {'site_name' : 'webtretho.com', 'class_name' : 'webtretho_com', 'time_out': 60}
-    ,{'site_name' : 'lamchame.com', 'class_name' : 'lamchame_com', 'time_out': 60}
-    ,{'site_name' : 'otofun.net', 'class_name' : 'otofun_net', 'time_out': 60}
+    {'site_name' : 'webtretho.com', 'class_name' : 'webtretho_com'}
+    ,{'site_name' : 'lamchame.com', 'class_name' : 'lamchame_com'}
+    ,{'site_name' : 'otofun.net', 'class_name' : 'otofun_net'}
     ]
+DOWNLOAD_QUEUE = RedisQueue('DOWNLOAD', 'forum')
+
+rc = redis.Redis()  # init redis client
 
 #define a worker function --> process data from each site
 def worker(queue):
     queue_full = True
-    while queue_full:
+    FINISHED = False
+    
+    while not FINISHED:
         try:
             #get your data off the queue, and do some work
             site = queue.get(False)
             objectName =  site['class_name']
-            print objectName
+            #print threading.current_thread().getName()
             sleep(1)
             try :
                 commandImport = "from sites." + objectName + " import " + objectName
                 commandInit = objectName + "()"
-                exec commandImport
-                #print 'Excecute: ' + commandImport
-                #sleep(1)
-                
+                exec commandImport                
                 siteObj = eval(commandInit)
-                #print 'Init object: '
-                #print siteObj
-                #sleep(1)
-                
+                                
                 topics = siteObj.getAllTopics()
                 for topic in topics:
-                    print 'TOPIC: ', topic
+                    postCounter = rc.get("forum:post_counter") # get total post and comment
+                    if postCounter and (int(postCounter) > 1000000):
+                        print 'Finish 1M Post!'
+                        FINISHED = True
+                        break
+                        
+                    print threading.current_thread().getName() , ' : TOPIC: ', topic
                     print '==============='
                     
-                    # get total papge in each topic
-                    #totalPageInTopic = siteObj.getTotalPageInTopic(topic)
-                    #print 'Total page in topic: ', totalPageInTopic
-                    #sleep(1)
                     topicPages = siteObj.getPagesInTopic(topic)
                     sleep(1)
                     
                     for topicPage in topicPages:
-                        print 'TOPIC PAGE: ', topicPage
+                        postCounter = rc.get("forum:post_counter") # get total post and comment
+                        if postCounter and (int(postCounter) > 1000000):
+                            print 'Finish 1M Post!'
+                            FINISHED = True   
+                            break               
+                        print threading.current_thread().getName() , ' : TOPIC PAGE: ', topicPage
                         print '--------'
                         sleep(1)
                         
                         threads = siteObj.getThreadsInTopic(topicPage)
                         for thread in threads:
-                            print 'Thread: ', thread                            
-                            detail = siteObj.getThreadDetail(thread)
-                            print "DETAIL: ", detail
+                            info = json.dumps({'class_name' : objectName, 'url' : thread})
+                            DOWNLOAD_QUEUE.put(info)
+                            print threading.current_thread().getName() , ' : Thread: ', thread                                                        
                             print '--------------'
-                            sleep(1)
-                                                
-                    
-                #content = site_obj.refine_content(content)
-                #return content
+                            sleep(1)                                            
             except Exception:
                 tb = traceback.format_exc()
                 print tb
-                #logger.error(tb)            
-                #logger.fatal("Co loi khi import: " + object_name)
                 
         except Queue.Empty:
             queue_full = False            
@@ -88,5 +91,4 @@ if __name__ == '__main__':
     for i in range(threadCount):
         t = threading.Thread(target=worker, args = (queueSites,))
         t.start()
-    print 'done'
         

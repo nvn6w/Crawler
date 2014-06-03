@@ -150,14 +150,15 @@ class webtretho_com(ISite):
         '''
             Lay thong tin chi tiet cua 1 thread
         '''
-        res = { 'post' : {'user' : '', 'title': '', 'date' : '', 'content' : ''}, 'comments' : [{'user' : '', 'date': '', 'content' : ''}] }
+        #res = { 'post' : {'user' : '', 'title': '', 'date' : '', 'content' : ''}, 'comments' : [{'user' : '', 'date': '', 'content' : ''}] }
+        res = {}
         try:
             html = Request.get_page_content(url);
             soup = BeautifulSoup(html)        
             soupPost = soup.find('ol', {'id' : 'posts'})
             
             title = soup.find('div', {'id' : 'widgetRefix'}).find('h1').get_text().strip()
-            print title
+            #print title
                 
             # list posts
             posts = soupPost.findAll('li', {'class' : 'postbit postbitim postcontainer'})
@@ -166,8 +167,7 @@ class webtretho_com(ISite):
             #print posts.size()            
             count = 0
             comments = []
-            
-            
+                        
             for post in posts:
                 
                 #print post
@@ -176,11 +176,11 @@ class webtretho_com(ISite):
                 postContent = post.find('blockquote', {'class' : 'postcontent restore'})
                 #postContent = postContent.renderContents()
                 postContent = postContent.get_text()
-                print postContent
-                print '----------------------'
+                #print postContent
+                #print '----------------------'
                 postContent = re.sub('[\t]+', ' ', postContent)
                 postContent = re.sub('[ ]+', ' ', postContent)
-                postContent = re.sub('[\r\n]+', '\r\n', postContent)
+                postContent = re.sub('[\\r\\n]+', '\n', postContent)
                 postContent = postContent.strip()
                 #print soup2.get_text().strip()
                 
