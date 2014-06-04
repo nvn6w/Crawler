@@ -67,7 +67,7 @@ if __name__ == '__main__':
     
     while not DOWNLOAD_QUEUE.empty() and not FINISHED:     
         postCounter = rc.get("forum:post_counter") # get total post and comment
-        if postCounter and (int(postCounter) > 115):
+        if postCounter and (int(postCounter) > 1000000):
             print 'Finish 1M Post!'
             FINISHED = True
             break

@@ -23,21 +23,26 @@ class webtretho_com(ISite):
         Lay ds cac topic co trong forum
         '''
         res = []
-        
-        baseUrl = 'http://www.webtretho.com/forum/f'
-        
-        url = 'http://www.webtretho.com/forum/search.php?search_type=1&contenttype=vBForum_Post'
-        html = Request.get_page_content(url)
-        soup = BeautifulSoup(html)
-        
-        soupCates = soup.find('select', {'id' : 'forumchoice'})
-        cates = soupCates.findAll('option')
-        for cate in cates:
-            topicNumber = cate['value']
+        try:
+            baseUrl = 'http://www.webtretho.com/forum/f'
             
-            if topicNumber.isdigit():                
-                topicUrl = baseUrl + topicNumber + '/'
-                res.append(topicUrl)
+            url = 'http://www.webtretho.com/forum/search.php?search_type=1&contenttype=vBForum_Post'
+            html = Request.get_page_content(url)
+            soup = BeautifulSoup(html)
+            
+            soupCates = soup.find('select', {'id' : 'forumchoice'})
+            cates = soupCates.findAll('option')
+            for cate in cates:
+                topicNumber = cate['value']
+                
+                if topicNumber.isdigit():                
+                    topicUrl = baseUrl + topicNumber + '/'
+                    res.append(topicUrl)
+        except Exception, e:
+            print e.message;
+            tb = traceback.format_exc()
+            print tb
+            pass
         return res
                 
     def getTotalPageInTopic(self, topicUrl):
@@ -45,14 +50,18 @@ class webtretho_com(ISite):
         Get total page in a topic
         '''
         total = 0
-        html = Request.get_page_content(topicUrl)
-        soup = BeautifulSoup(html)
-        pageNav = soup.find('div', {'class' : 'threadpagenav'})
-        if pageNav:
-            lastPage = pageNav.find('span', {'class' : 'first_last1'})
-            if lastPage:
-                #print lastPage.string
-                total = int(lastPage.string)
+        try:
+            html = Request.get_page_content(topicUrl)
+            soup = BeautifulSoup(html)
+            pageNav = soup.find('div', {'class' : 'threadpagenav'})
+            if pageNav:
+                lastPage = pageNav.find('span', {'class' : 'first_last1'})
+                if lastPage:
+                    #print lastPage.string
+                    total = int(lastPage.string)
+        except:
+            print 'Error when get total page'
+            pass            
         
         return total
         
@@ -67,13 +76,17 @@ class webtretho_com(ISite):
             Lay tat ca cac page (co phan trang) tu 1 topic
         '''
         res = []
-        totalPage = self.getTotalPageInTopic(topicUrl)
-        if totalPage == 0:
-            res.append(topicUrl)
-        else :
-            for nextPage in range(1, totalPage + 1):
-                page = self.getNextPageInTopic(topicUrl, nextPage)
-                res.append(page)
+        try:
+            totalPage = self.getTotalPageInTopic(topicUrl)
+            if totalPage == 0:
+                res.append(topicUrl)
+            else :
+                for nextPage in range(1, totalPage + 1):
+                    page = self.getNextPageInTopic(topicUrl, nextPage)
+                    res.append(page)
+        except:
+            print 'Error when get pages in topic'
+            pass
         return res                
     
     def getThreadsInTopic(self, topicUrl):
@@ -81,28 +94,34 @@ class webtretho_com(ISite):
         Lay tat ca cac thread goc co trong 1 topic
         '''
         res = []
-        html = Request.get_page_content(topicUrl)
-        soup = BeautifulSoup(html)
-        ulThread = soup.find('ul', {'id' : 'threads'})
-        #print ulThread
-        if ulThread:
-            threads = ulThread.findAll('li', {'class' : 'threadbit_nam_fix_select'})    
-            if threads:                 
-                for thread in threads:
-                    try:
-                        #import pdb
-                        #pdb.set_trace()
-                        #print thread
-                        tLink = thread.find('a', {'class' : 'title'})
-                        if (tLink) :
-                            tUrl = tLink['href']
-                            res.append(tUrl)
-                            #print tUrl
-                            #print '--------------------'
-                    except Exception,e:
-                        print e.message;
-                        tb = traceback.format_exc()
-                        print tb
+        try:
+            html = Request.get_page_content(topicUrl)
+            soup = BeautifulSoup(html)
+            ulThread = soup.find('ul', {'id' : 'threads'})
+            #print ulThread
+            if ulThread:
+                threads = ulThread.findAll('li', {'class' : 'threadbit_nam_fix_select'})    
+                if threads:                 
+                    for thread in threads:
+                        try:
+                            #import pdb
+                            #pdb.set_trace()
+                            #print thread
+                            tLink = thread.find('a', {'class' : 'title'})
+                            if (tLink) :
+                                tUrl = tLink['href']
+                                res.append(tUrl)
+                                #print tUrl
+                                #print '--------------------'
+                        except Exception,e:
+                            print e.message;
+                            tb = traceback.format_exc()
+                            print tb
+        except Exception, e:
+            print e.message;
+            tb = traceback.format_exc()
+            print tb
+            pass
         return res
     
     def getTotalPageInThread(self, url):
@@ -208,9 +227,11 @@ class webtretho_com(ISite):
             res['comments'] = comments
             #print res
             
-        except Exception as e :
-            print 'Error when parsing url: ' + url
-            print e
+        except Exception, e:
+            print e.message;
+            tb = traceback.format_exc()
+            print tb
+            pass
         return res
     
     

@@ -22,21 +22,24 @@ class otofun_net(object):
 
     def getAllTopics(self):
         res = []
-        
-        baseUrl  ='http://www.otofun.net/'
-        url = 'http://www.otofun.net/forum.php'
-        
-        html = Request.get_page_content(url)
-        soup = BeautifulSoup(html)
-        links = soup.findAll('a')
-        for link in links:
-            if link['href'].startswith('forums/'):
-                u = link['href']
-                pos = u.find('?s=')
-                if pos != -1:
-                    u = u[0:pos]
-                u = baseUrl + u                
-                res.append(u)
+        try:
+            baseUrl  ='http://www.otofun.net/'
+            url = 'http://www.otofun.net/forum.php'
+            
+            html = Request.get_page_content(url)
+            soup = BeautifulSoup(html)
+            links = soup.findAll('a')
+            for link in links:
+                if link['href'].startswith('forums/'):
+                    u = link['href']
+                    pos = u.find('?s=')
+                    if pos != -1:
+                        u = u[0:pos]
+                    u = baseUrl + u                
+                    res.append(u.encode('utf-8'))
+        except:
+            print 'Error when get all topic'
+            pass
         return res  
     
     def getTotalPageInTopic(self, topicUrl):
@@ -44,23 +47,27 @@ class otofun_net(object):
             Lay tong so page trong 1 topic
         '''        
         total = 0
-        html = Request.get_page_content(topicUrl)
-        soup = BeautifulSoup(html)
-        nav = soup.find('div', {'class' : 'threadpagenav'})
-        if nav:
-            lastPage = nav.find('span', {'class' : 'first_last'})
-            if lastPage:
-                aLink = lastPage.find('a')
-                if aLink:
-                    url = aLink['href']
-                    pos1 = url.find('/page')
-                    pos2 = url.find('?s=')
-                    if pos1 != -1:
-                        if pos2 != -1: # ton tai ?s=
-                            page = url[pos1+5:pos2]
-                        else :
-                            page = url[pos1+5:]
-                        total = int(page)                                           
+        try:
+            html = Request.get_page_content(topicUrl)
+            soup = BeautifulSoup(html)
+            nav = soup.find('div', {'class' : 'threadpagenav'})
+            if nav:
+                lastPage = nav.find('span', {'class' : 'first_last'})
+                if lastPage:
+                    aLink = lastPage.find('a')
+                    if aLink:
+                        url = aLink['href']
+                        pos1 = url.find('/page')
+                        pos2 = url.find('?s=')
+                        if pos1 != -1:
+                            if pos2 != -1: # ton tai ?s=
+                                page = url[pos1+5:pos2]
+                            else :
+                                page = url[pos1+5:]
+                            total = int(page)
+        except:
+            print 'Error when get total page in topic'
+            pass
         return total
     
     def getNextPageInTopic(self, topicUrl, nextPage):
@@ -79,13 +86,17 @@ class otofun_net(object):
             Lay tat ca cac page (co phan trang) tu 1 topic
         '''
         res = []
-        totalPage = self.getTotalPageInTopic(topicUrl)
-        if totalPage == 0:
-            res.append(topicUrl)
-        else :
-            for nextPage in range(1, totalPage + 1):
-                page = self.getNextPageInTopic(topicUrl, nextPage)
-                res.append(page)
+        try:
+            totalPage = self.getTotalPageInTopic(topicUrl)
+            if totalPage == 0:
+                res.append(topicUrl)
+            else :
+                for nextPage in range(1, totalPage + 1):
+                    page = self.getNextPageInTopic(topicUrl, nextPage)
+                    res.append(page)
+        except:
+            print 'Error when get pages in topic'
+            pass
         return res 
     
     def getThreadsInTopic(self, topicUrl):
@@ -94,23 +105,27 @@ class otofun_net(object):
         '''
 
         res = []
-        html = Request.get_page_content(topicUrl)
-        soup = BeautifulSoup(html)
-        
-        threads = soup.find('ol', {'id' : 'threads'})        
-        if threads:
-            #find thread
-            for thread in threads.findAll('h3', {'class' : 'threadtitle'}):
-                #print thread
-                tLink = thread.find('a', {'class' : 'title'})
-                if (tLink) :
-                    tUrl  = tLink['href']
-                    pos = tUrl.find('?s=')
-                    if pos:
-                        tUrl = tUrl[0:pos]
-                    tUrl = 'http://www.otofun.net/forums/' + tUrl
-                    if tUrl not in res:
-                        res.append(tUrl)
+        try:
+            html = Request.get_page_content(topicUrl)
+            soup = BeautifulSoup(html)
+            
+            threads = soup.find('ol', {'id' : 'threads'})        
+            if threads:
+                #find thread
+                for thread in threads.findAll('h3', {'class' : 'threadtitle'}):
+                    #print thread
+                    tLink = thread.find('a', {'class' : 'title'})
+                    if (tLink) :
+                        tUrl  = tLink['href']
+                        pos = tUrl.find('?s=')
+                        if pos:
+                            tUrl = tUrl[0:pos]
+                        tUrl = 'http://www.otofun.net/forums/' + tUrl
+                        if tUrl not in res:
+                            res.append(tUrl)
+        except :
+            print 'Error when get threads in topic'
+            pass
         return res               
     
     def getThreadDetail(self, url):
@@ -160,7 +175,8 @@ class otofun_net(object):
             res['comments'] = comments
             
         except:
-            print 'ERROR when crawling URL : ' , url
+            #print 'ERROR when crawling URL : ' , url
+            print 'ERROR when get thread detail'
             pass
         
         return res    

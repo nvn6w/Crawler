@@ -54,22 +54,34 @@ def worker(queue):
                     sleep(1)
                     
                     for topicPage in topicPages:
-                        postCounter = rc.get("forum:post_counter") # get total post and comment
-                        if postCounter and (int(postCounter) > 1000000):
-                            print 'Finish 1M Post!'
-                            FINISHED = True   
-                            break               
-                        print threading.current_thread().getName() , ' : TOPIC PAGE: ', topicPage
-                        print '--------'
-                        sleep(1)
-                        
-                        threads = siteObj.getThreadsInTopic(topicPage)
-                        for thread in threads:
-                            info = json.dumps({'class_name' : objectName, 'url' : thread})
-                            DOWNLOAD_QUEUE.put(info)
-                            print threading.current_thread().getName() , ' : Thread: ', thread                                                        
-                            print '--------------'
-                            sleep(1)                                            
+                        try:
+                            postCounter = rc.get("forum:post_counter") # get total post and comment
+                            if postCounter and (int(postCounter) > 1000000):
+                                print 'Finish 1M Post!'
+                                FINISHED = True   
+                                break               
+                            print threading.current_thread().getName() , ' : TOPIC PAGE: ', topicPage
+                            print '--------'
+                            sleep(1)
+                            
+                            threads = siteObj.getThreadsInTopic(topicPage)
+                            for thread in threads:
+                                try:
+                                    info = json.dumps({'class_name' : objectName, 'url' : thread})
+                                    DOWNLOAD_QUEUE.put(info)
+                                    print threading.current_thread().getName() , ' : Thread: ', thread                                                        
+                                    print '--------------'
+                                    sleep(1)
+                                except Exception, e:
+                                    print e.message;
+                                    tb = traceback.format_exc()
+                                    print tb
+                                    pass
+                        except Exception, e2:
+                            print e2.message;
+                            tb = traceback.format_exc()
+                            print tb
+                            pass
             except Exception:
                 tb = traceback.format_exc()
                 print tb
